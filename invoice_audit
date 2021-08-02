@@ -77,57 +77,56 @@ def extract_transform(db: str, env: str, ignore_cids: list) -> pd.DataFrame:
 
 @task()
 def same_same_same(target_df: pd.DataFrame) -> pd.DataFrame:
-	"""runs same_same_same + same_same_different tests and concatenates the results
+	"""runs same_same_same+ same_same_different tests and concatenates the results
 
     :param target_df: pd.DataFrame
     :return: df: pd.DataFrame
     """
-	############################################################################################
-	# SAME SAME SAME TESTS chapter 12 of Mark J. Nigrini,
-  “Forensic Analytics: Methods and Techniques for Forensic Accounting Investigations”
-	############################################################################################
-	logger = prefect.context.get("logger")
-	if target_df is not None and len(target_df) != 0:
-		# don't allow rows with missing values in the columns below
-		target_df.dropna(axis=0, subset=['invoice_number', 'issue_date', 'total', 'vendor_name'],
-						 how="any", inplace=True)
+    ############################################################################################
+    # SAME SAME SAME TESTS
+    ############################################################################################
+    logger = prefect.context.get("logger")
+    if target_df is not None and len(target_df) != 0:
+	# don't allow rows with missing values in the columns below
+	target_df.dropna(axis=0, subset=['invoice_number', 'issue_date', 'total', 'vendor_name'],
+					 how="any", inplace=True)
 
-		# normalize invoice numbers
-		target_df['invoice_number_normalized'] = target_df['invoice_number'].str.replace(r'[\W ]', '')
-		# target_df.head()
+	# normalize invoice numbers
+	target_df['invoice_number_normalized'] = target_df['invoice_number'].str.replace(r'[\W ]', '')
+	# target_df.head()
 
-		# SSSD
-		logger.info('SAME: vendor_name, invoice_number, total')
-		logger.info('DIFFERENT: `issue_date`')
-		target_df2 = target_df[
-			target_df.duplicated(['invoice_number_normalized', 'vendor_name', 'total'], keep=False)]
-		# logger.info(f"Potential Refund: ${(target_df2['total'].sum() / 2):.2f}")
-		target_df2 = target_df2.sort_values(by="invoice_number_normalized")
+	# SSSD
+	logger.info('SAME: vendor_name, invoice_number, total')
+	logger.info('DIFFERENT: `issue_date`')
+	target_df2 = target_df[
+		target_df.duplicated(['invoice_number_normalized', 'vendor_name', 'total'], keep=False)]
+	# logger.info(f"Potential Refund: ${(target_df2['total'].sum() / 2):.2f}")
+	target_df2 = target_df2.sort_values(by="invoice_number_normalized")
 
-		logger.info('SAME: vendor_name, invoice_number, issue_date')
-		logger.info('DIFFERENT: total')
-		target_df1 = target_df[
-			target_df.duplicated(['invoice_number_normalized', 'vendor_name', 'issue_date'], keep=False)]
-		# logger.info(f"Potential Refund: ${(target_df1['total'].sum() / 2):.2f}")
-		target_df1 = target_df1.sort_values(by="invoice_number_normalized")
+	logger.info('SAME: vendor_name, invoice_number, issue_date')
+	logger.info('DIFFERENT: total')
+	target_df1 = target_df[
+		target_df.duplicated(['invoice_number_normalized', 'vendor_name', 'issue_date'], keep=False)]
+	# logger.info(f"Potential Refund: ${(target_df1['total'].sum() / 2):.2f}")
+	target_df1 = target_df1.sort_values(by="invoice_number_normalized")
 
-		logger.info('SAME: invoice_number, issue_date, total')
-		logger.info('DIFFERENT: vendor_name')
-		target_df4 = target_df[target_df.duplicated(['invoice_number_normalized', 'total', 'issue_date'], keep=False)]
-		# logger.info(f"Potential Refund: ${(target_df4['total'].sum() / 2):.2f}")
-		target_df4 = target_df4.sort_values(by="invoice_number_normalized")
+	logger.info('SAME: invoice_number, issue_date, total')
+	logger.info('DIFFERENT: vendor_name')
+	target_df4 = target_df[target_df.duplicated(['invoice_number_normalized', 'total', 'issue_date'], keep=False)]
+	# logger.info(f"Potential Refund: ${(target_df4['total'].sum() / 2):.2f}")
+	target_df4 = target_df4.sort_values(by="invoice_number_normalized")
 
-		logger.info('SAME: vendor_name, issue_date, total')
-		logger.info('DIFFERENT: invoice_number')
-		target_df3 = target_df[target_df.duplicated(['vendor_name', 'total', 'issue_date'], keep=False)]
-		# logger.info(f"Potential Refund: `${(target_df3['total'].sum() / 2):.2f}`")
-		target_df3 = target_df3.sort_values(by="total")
+	logger.info('SAME: vendor_name, issue_date, total')
+	logger.info('DIFFERENT: invoice_number')
+	target_df3 = target_df[target_df.duplicated(['vendor_name', 'total', 'issue_date'], keep=False)]
+	# logger.info(f"Potential Refund: `${(target_df3['total'].sum() / 2):.2f}`")
+	target_df3 = target_df3.sort_values(by="total")
 
-		# CONCATENATE ALL TOGETHER
-		concatenate_list = [target_df2, target_df1, target_df4]
-		target = pd.concat([x for x in concatenate_list if x is not None])
+	# CONCATENATE ALL TOGETHER
+	concatenate_list = [target_df2, target_df1, target_df4]
+	target = pd.concat([x for x in concatenate_list if x is not None])
 
-		return target.head(10)  # return first 10 - hardcoded limit
+	return target.head(10)  # return first 10 - hardcoded limit
 
 
 @task()
