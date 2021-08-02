@@ -162,9 +162,7 @@ with Flow("invoice_audit") as f:
 	email_to = Parameter("email_to", default=["fvadan@onedatasource.com"])
 
 	# other configurations
-	IGNORE_CIDS = ["demo", "ods", "cambridge",
-				   "mh_mcdonalds", "mh_jri", "primary_aim",
-				   "tetra", "mcc", "retzer"]
+	IGNORE_CIDS = [...]
 
 	# email config - used to generate different salutation-closing combinations
 	email_config = {
