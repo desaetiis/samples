@@ -81,10 +81,8 @@ def same_same_same(target_df: pd.DataFrame) -> pd.DataFrame:
     :param target_df: pd.DataFrame
     :return: df: pd.DataFrame
     """
-	############################################################################################
-	# SAME SAME SAME TESTS
-	############################################################################################
 
+	# SAME SAME SAME TESTS
 	logger = prefect.context.get("logger")
 	if target_df is not None and len(target_df) != 0:
 		# don't allow rows with missing values in the columns below
